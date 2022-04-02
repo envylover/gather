@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="30dp"
+    android:layout_marginLeft="12dp"
+    android:layout_marginRight="12dp"
+    android:background="@drawable/friends_item_shape"
+    >
+
+    <ImageView
+        android:id="@+id/touxiang"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginRight="5dp"
+        android:background="@drawable/adatar_shape"
+        android:scaleType="centerInside"
+        android:src="@drawable/touxiang"></ImageView>
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="3dp"
+        android:layout_toRightOf="@id/touxiang"
+        android:text="名字"
+        android:textStyle="bold"
+        android:textSize="15dp"></TextView>
+    <ImageView
+        android:id="@+id/dingweiIcon"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_toLeftOf="@id/distanceText"
+        android:src="@drawable/location_friend"></ImageView>
+
+    <TextView
+        android:id="@+id/distanceText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="3dp"
+        android:text="距离您: "></TextView>
+
+    <TextView
+        android:id="@+id/locationText"
+        android:layout_width="wrap_content"
+
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/name"
+        android:layout_alignBottom="@id/touxiang"
+        android:text="所在位置: "
+        android:textSize="12dp"></TextView>
+
+
+</RelativeLayout>
