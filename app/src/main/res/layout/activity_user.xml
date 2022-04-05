@@ -58,6 +58,7 @@
            </com.google.android.material.bottomnavigation.BottomNavigationView>
        </LinearLayout>
        <com.example.gather.MenuView
+           android:id="@+id/menu_view"
            android:layout_width="match_parent"
            android:layout_height="match_parent"
            android:layout_gravity="start"

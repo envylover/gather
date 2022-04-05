@@ -12,7 +12,9 @@ import java.util.ArrayList;
 
 public class FriendsViewModel extends ViewModel {
     private MutableLiveData<ArrayList<Friend>> friends;
-
+    public FriendsViewModel() {
+        friends = new MutableLiveData<>();
+    }
     public void setFriends(ArrayList<Friend> friends) {
         this.friends.postValue(friends);
     }

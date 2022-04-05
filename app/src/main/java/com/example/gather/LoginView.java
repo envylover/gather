@@ -92,5 +92,6 @@ public class LoginView extends LinearLayout implements View.OnClickListener {
                 });
             }
         });
+        checkLogin.check();
     }
 }

@@ -43,6 +43,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     }
 
     public FriendsAdapter() {
+        friends = new ArrayList<>();
     }
 
     public void setFriends(ArrayList<Friend> friends) {

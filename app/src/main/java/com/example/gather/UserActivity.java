@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,19 +30,28 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.amap.api.maps.MapsInitializer;
+import com.example.gather.Interface.Promise;
 import com.example.gather.ViewModel.*;
+import com.example.gather.util.CheckRoom;
 import com.example.gather.util.location.CheckPermissions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 
 
-public class UserActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+public class UserActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, StartGameDialogFragment.OnEntryRoomClickListener {
 
     private BottomNavigationView bottomNavigationView;
     private DrawerLayout drawerLayout;
     private Button head_button;
     private LoginViewModel userInfo;
     private FriendsViewModel friends;
+    private MenuView menuView;
+    private RoomViewModel roomInfo;
+    public ProgressDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         MainApplication.activityManger.addActivity(this);
@@ -55,10 +65,60 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
     public void init() {
         String data = getIntent().getStringExtra("user_info");
         userInfo = new ViewModelProvider(this).get(LoginViewModel.class);
+        menuView = findViewById(R.id.menu_view);
+        roomInfo = new ViewModelProvider(this).get(RoomViewModel.class);
+        friends = new ViewModelProvider(this).get(FriendsViewModel.class);
+        userInfo.user.observe(this, userInfo -> {
+            if(menuView != null) {
+                menuView.setMenuName(userInfo.name);
+            }
+        });
+        roomInfo.Observe(this, roomInfo -> {
+            if(roomInfo != null) {
+                RoomInfo room = (RoomInfo) roomInfo;
+                CheckRoom checkRoom = new CheckRoom(this, room.roomName, room.password);
+                checkRoom.setCheckedListener(new Promise() {
+                    @Override
+                    public void onSuccess(String data) {
+                        if(progressDialog != null) {
+                            runOnUiThread(()->{
+                                if(progressDialog.isShowing())
+                                    progressDialog.hide();
+                                progressDialog = null;
+                            });
+                        }
+                        Gson gson = new Gson();
+                        Type type = new TypeToken<ArrayList<Friend>>(){}.getType();
+                        ArrayList<Friend> friendList = gson.fromJson(data, type);
+                        friends.setFriends(friendList);
+                    }
+
+                    @Override
+                    public void onFail(String error) {
+                        if(progressDialog != null) {
+                            runOnUiThread(()->{
+                                if(progressDialog.isShowing())
+                                    progressDialog.hide();
+                                progressDialog = null;
+                            });
+                        }
+                    }
+                });
+                checkRoom.check();
+            }
+        });
         if(data != null) {
             Gson gson = new Gson();
             UserInfo userInfo = gson.fromJson(data, UserInfo.class);
+            SharedPreferences ref = getSharedPreferences("current_use", 0);
+            ref.edit().putString("current_useInfo_name", userInfo.name).apply();
             this.userInfo.setUser(userInfo);
+        } else {
+            SharedPreferences ref = getSharedPreferences("current_use", 0);
+            String name = ref.getString("current_useInfo_name", "");
+            if(name !="") {
+                menuView.setMenuName(name);
+            }
         }
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
@@ -117,10 +177,29 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
         switch (item.getItemId()) {
             case R.id.add_friends:
                 StartGameDialogFragment startGameDialogFragment = new  StartGameDialogFragment();
+                startGameDialogFragment.setEntryRoomClick(this);
                 startGameDialogFragment.show(getSupportFragmentManager(), "加入房间");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+
+    @Override
+    public void OnEntryRoomClick(String name, String password) {
+        RoomInfo roomInfo = new RoomInfo();
+        roomInfo.roomName = name;
+        roomInfo.password = password;
+        this.roomInfo.setRoomInfo(roomInfo);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCanceledOnTouchOutside(true);
+        progressDialog.setMessage("正在进入房间");
+        progressDialog.show();
+    }
+
+    @Override
+    public void OnCancelClick() {
+
     }
 }

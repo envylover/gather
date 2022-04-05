@@ -39,6 +39,9 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         friendsViewModel = new ViewModelProvider(requireActivity()).get(FriendsViewModel.class);
+        friendsViewModel.Observe(requireActivity(), friends -> {
+
+        });
     }
 
     @Nullable
@@ -111,7 +114,7 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
     @Override
     public void onTouch(MotionEvent motionEvent) {
         if(isFollow) {
-            myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_MAP_ROTATE_NO_CENTER);
+            myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER);
             aMap.setMyLocationStyle(myLocationStyle);
             isFollow = false;
         }

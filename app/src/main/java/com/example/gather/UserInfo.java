@@ -6,4 +6,5 @@ public class UserInfo implements Serializable {
     public String phone;
     public String name;
     public String touxiangUrl;
+    public String useId;
 }

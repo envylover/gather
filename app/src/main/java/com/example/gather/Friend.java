@@ -1,10 +1,13 @@
 package com.example.gather;
 
-public class Friend {
-    private String distance;
+import java.io.Serializable;
+
+public class Friend implements Serializable {
+    private transient String distance;
     public String location;
     public String name;
     public String userId;
+
     public Friend(String distance,String location, String name){
         this.distance = distance;
         this.location = location;
@@ -33,5 +36,13 @@ public class Friend {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

@@ -12,8 +12,16 @@ import javax.security.auth.callback.Callback;
 
 
 public class CheckLogin {
+    private Context context;
+    private String password;
+    private String roomNum;
     private Promise promise;
-    public CheckLogin(Context context, String phoneNum, String password) {
+    public CheckLogin(Context context, String roomNum, String password) {
+        this.roomNum = roomNum;
+        this.password = password;
+        this.context = context;
+    }
+    public void check() {
         new Thread(()->{
                 try {
                     Thread.sleep(3000);
@@ -21,7 +29,7 @@ public class CheckLogin {
                     e.printStackTrace();
                 }
                 if(promise != null) {
-                    promise.onSuccess(null);
+                    promise.onSuccess("{\"phone\": \"12312313113\",\"name\":\"john\" }");
                 }
             }).start();
     }
