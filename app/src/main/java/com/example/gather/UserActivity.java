@@ -31,6 +31,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.amap.api.maps.MapsInitializer;
 import com.example.gather.Interface.Promise;
+import com.example.gather.Model.GetUseModel;
 import com.example.gather.ViewModel.*;
 import com.example.gather.util.CheckRoom;
 import com.example.gather.util.location.CheckPermissions;
@@ -109,13 +110,19 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
         });
         if(data != null) {
             Gson gson = new Gson();
-            UserInfo userInfo = gson.fromJson(data, UserInfo.class);
+            GetUseModel userInfo = gson.fromJson(data, GetUseModel.class);
             SharedPreferences ref = getSharedPreferences("current_use", 0);
-            ref.edit().putString("current_useInfo_name", userInfo.name).apply();
-            this.userInfo.setUser(userInfo);
+            ref.edit().putString("current_useInfo_name", userInfo.data[0].name).putString("useInfo", gson.toJson(userInfo.data[0])).apply();
+            this.userInfo.setUser(userInfo.data[0]);
         } else {
             SharedPreferences ref = getSharedPreferences("current_use", 0);
             String name = ref.getString("current_useInfo_name", "");
+            String data1 = ref.getString("useInfo", "");
+            if(data1.compareTo("")!= 0){
+                Gson gson = new Gson();
+                UserInfo userInfo1 = gson.fromJson(data1, UserInfo.class);
+                this.userInfo.setUser(userInfo1);
+            }
             if(name !="") {
                 menuView.setMenuName(name);
             }

@@ -6,8 +6,9 @@ public class Friend implements Serializable {
     private transient String distance;
     public String location;
     public String name;
-    public String userId;
-
+    public String uid;
+    public Double lnt, lat;
+    public String phone;
     public Friend(String distance,String location, String name){
         this.distance = distance;
         this.location = location;
@@ -38,11 +39,11 @@ public class Friend implements Serializable {
         this.name = name;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUid() {
+        return uid;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUid(String userId) {
+        this.uid = userId;
     }
 }

@@ -68,4 +68,10 @@ dependencies {
     implementation 'com.amap.api:map2d:latest.integration'
 
     implementation 'com.amap.api:navi-3dmap:latest.integration'
+
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.9.3"))
+
+    // define any required OkHttp artifacts without version
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor")
 }

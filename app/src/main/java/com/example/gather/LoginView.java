@@ -14,22 +14,33 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.gather.Interface.Promise;
+import com.example.gather.Model.GetUseModel;
 import com.example.gather.ViewModel.LoginViewModel;
 import com.example.gather.util.CheckLogin;
+import com.example.gather.util.Md5;
 import com.google.gson.Gson;
 
-public class LoginView extends LinearLayout implements View.OnClickListener {
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+public class LoginView extends LinearLayout implements View.OnClickListener, RegisterDialog.OnEntryRoomClickListener, Promise{
 
     private EditText editPhone;
     private EditText editPassword;
     private Button loginButton;
     private CheckBox isRem;
     private Context context;
+    private UserInfo userInfo = new UserInfo();
+    private ProgressDialog progressDialog;
+    CheckLogin checkLogin;
     @SuppressLint("ResourceType")
     public LoginView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -41,6 +52,10 @@ public class LoginView extends LinearLayout implements View.OnClickListener {
         SharedPreferences refs = context.getSharedPreferences("data", 0);
         String phone = refs.getString("phone","");
         String password = refs.getString(phone, "");
+        String uid = refs.getString("uid", "");
+        checkLogin = new CheckLogin();
+        checkLogin.setUid(uid);
+        checkLogin.setphone(phone);
         boolean isRem = refs.getBoolean("remember", false);
         this.context = context;
         if(phone != ""){
@@ -58,40 +73,88 @@ public class LoginView extends LinearLayout implements View.OnClickListener {
         SharedPreferences.Editor editor = context.getSharedPreferences("data", 0).edit();
         if(!isRem.isChecked()){
             editor.clear();
-        }else {
-            editor.putString("phone", editPhone.getText().toString());
-            editor.putString(editPhone.getText().toString(), editPassword.getText().toString());
-            editor.putBoolean("remember", true);
-            editor.apply();
+        }else if(editPhone.getText().toString().compareTo(checkLogin.getphone()) != 0) {
+            editor.putString("uid", "");
         }
-        Intent intent = new Intent(this.context, UserActivity.class);
-
+        editor.putString("phone", editPhone.getText().toString());
+        editor.putString(editPhone.getText().toString(), editPassword.getText().toString());
+        editor.putBoolean("remember", true);
+        editor.apply();
         editor.putBoolean("hasLogin", true);
         editor.apply();
-        ProgressDialog progressDialog = new ProgressDialog(context);
+        progressDialog = new ProgressDialog(context);
         progressDialog.setCanceledOnTouchOutside(true);
         progressDialog.setMessage("登陆中");
         progressDialog.show();
-        CheckLogin checkLogin = new CheckLogin(context,editPhone.getText().toString(),editPassword.getText().toString());
-        checkLogin.setCheckedListener(new Promise() {
-            @Override
-            public void onSuccess(String data) {
-                intent.putExtra("user_info", data);
-                ((Activity) context).runOnUiThread(()->{
-                    progressDialog.hide();
-                    context.startActivity(intent);
-                    ((Activity) context).finish();
-                });
-
-            }
-
-            @Override
-            public void onFail(String error) {
-                ((Activity) context).runOnUiThread(()->{
-                    progressDialog.hide();
-                });
-            }
-        });
+        checkLogin.setPassword(editPassword.getText().toString());
+        checkLogin.setphone(editPhone.getText().toString());
+        checkLogin.setCheckedListener(this);
         checkLogin.check();
+    }
+
+    @Override
+    public void OnEntryRoomClick(String name, String password) {
+        Md5 md5 = new Md5();
+        String str = md5.md5(new String[]{name, password});
+        String passwordMd5 = md5.md5(new String[]{editPassword.getText().toString()});
+        new Thread(()-> {
+            checkLogin.register(str,name,passwordMd5);
+        }).start();
+    }
+
+    @Override
+    public void OnCancelClick() {
+
+    }
+
+    @Override
+    public void onSuccess(String data) {
+        Gson gson = new Gson();
+        GetUseModel useModel = gson.fromJson(data,GetUseModel.class);
+        if(useModel.data != null) {
+            Intent intent = new Intent(this.context, UserActivity.class);
+            intent.putExtra("user_info", data);
+            SharedPreferences.Editor editor = context.getSharedPreferences("data", 0).edit();
+            if (!isRem.isChecked()) {
+                editor.clear();
+            } else {
+                editor.putString("phone", editPhone.getText().toString());
+                editor.putString(editPhone.getText().toString(), editPassword.getText().toString());
+                editor.putBoolean("remember", true);
+                editor.putString("uid", checkLogin.getUid());
+                editor.apply();
+            }
+            ((Activity) context).runOnUiThread(() -> {
+                progressDialog.hide();
+                context.startActivity(intent);
+                ((Activity) context).finish();
+            });
+        }else if("success".compareTo(useModel.result) == 0) {
+           checkLogin.check();
+        }
+    }
+
+    @Override
+    public void onFail(String error) {
+        ((Activity) context).runOnUiThread(()->{
+            if(error.compareTo("不存在") == 0) {
+                RegisterDialog registerDialog = new RegisterDialog();
+                registerDialog.setEntryRoomClick(this);
+                registerDialog.show(((AppCompatActivity)context).getSupportFragmentManager() , "加入房间");
+            }
+            else if(error.compareTo("连接失败") == 0) {
+                Toast.makeText(getContext(),"网络连接失败", Toast.LENGTH_LONG).show();
+
+            }
+            else if(error.compareTo("密码错误") == 0) {
+                Toast.makeText(getContext(),"密码错误", Toast.LENGTH_LONG).show();
+            }
+            else if(error.compareTo("参数错误") == 0)  {
+                Toast.makeText(getContext(),error, Toast.LENGTH_LONG).show();
+            }
+            SharedPreferences.Editor editor = context.getSharedPreferences("data", 0).edit();
+            editor.putBoolean("hasLogin", false);
+            progressDialog.hide();
+        });
     }
 }
