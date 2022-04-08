@@ -7,13 +7,21 @@ import com.example.gather.Interface.Promise;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
+class CheckResponse {
+    public Friend[] data;
+    public String errorMsg;
+    public String result;
+}
 
 public class CheckRoom {
     private Promise promise;
@@ -30,33 +38,79 @@ public class CheckRoom {
     public void setCheckedListener(Promise promise) {
         this.promise = promise;
     }
-    public void check() {
+    public void check(String uid) {
         new Thread(()->{
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if(promise != null) {
-                ArrayList<Friend> friends = new ArrayList<>();
-                for(int i = 0; i < 20;++i) {
-                    friends.add(new Friend("1000000" + i,"1000000" + i, "join" + i));
-                }
-                Gson gson = new Gson();
-                Type type = new TypeToken<ArrayList<Friend>>(){}.getType();
-                promise.onSuccess(gson.toJson(friends,type));
-            }
+            joinRoom(uid);
         }).start();
     }
-    public void joinRoom(String Uid) {
-        String Url = baseUrl + "?type=joinRoom"; // "&uid=" + uid + "&name=" + name +"&password=" + password + "&phone=" + roomNum;
+    public void joinRoom(String uid) {
+        String Url = baseUrl + "?type=checkRoom";
+        Md5 md5 = new Md5();
+        password = md5.md5(new String[]{password});
         FormBody body = new FormBody.Builder().add("rid", roomNum).add("password", password).build();
         Request request = new Request.Builder().url(Url)
                 .addHeader("charset", "utf-8")
                 .post(body)
                 .build();
         Response response = null;
+        try {
+            response = client.newCall(request).execute();
+            String res = response.body().string();
+            Gson gson = new Gson();
+            CheckResponse result = gson.fromJson(res, CheckResponse.class);
+            if(result.result != null && result.result.compareTo("success") == 0) {
+                join(uid);
+            } else {
+                if(promise !=null) promise.onFail("error");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
+
+    private void join(String uid) {
+        String Url = baseUrl + "?type=joinRoom";
+        FormBody body = new FormBody.Builder().add("rid", roomNum).add("uid", uid).build();
+        Request request = new Request.Builder().url(Url)
+                .addHeader("charset", "utf-8")
+                .post(body)
+                .build();
+        Response response = null;
+        try {
+            response = client.newCall(request).execute();
+            String res = response.body().string();
+            Gson gson = new Gson();
+            CheckResponse result = gson.fromJson(res, CheckResponse.class);
+            if(result.result != null && result.result.compareTo("success") == 0) {
+                getFriends(uid, roomNum);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void getFriends(String uid, String rid) {
+        String Url = baseUrl + "?type=getUseInfoRoom";
+        FormBody body = new FormBody.Builder().add("rid", rid).add("uid", uid).build();
+        Request request = new Request.Builder().url(Url)
+                .addHeader("charset", "utf-8")
+                .post(body)
+                .build();
+        Response response = null;
+        try {
+            response = client.newCall(request).execute();
+            String res = response.body().string();
+            Gson gson = new Gson();
+            CheckResponse result = gson.fromJson(res, CheckResponse.class);
+            if(result.data != null && result.data.length > 0 ) {
+                if(promise != null) promise.onSuccess(gson.toJson(result.data));
+            }else if(promise !=null) promise.onFail(result.errorMsg != null ? result.errorMsg : result.result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void createRoom() {
 
     }

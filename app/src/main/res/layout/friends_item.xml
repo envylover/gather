@@ -5,7 +5,7 @@
     android:layout_marginBottom="10dp"
     android:layout_marginLeft="12dp"
     android:layout_marginRight="12dp"
-    android:paddingTop="20dp"
+    android:paddingTop="10dp"
     android:background="@drawable/friends_item_shape"
     >
 
@@ -16,6 +16,7 @@
         android:layout_marginRight="5dp"
         android:background="@drawable/adatar_shape"
         android:scaleType="centerInside"
+        android:layout_marginBottom="20dp"
         android:src="@drawable/touxiang"></ImageView>
 
     <TextView
@@ -52,7 +53,8 @@
 
         android:layout_height="wrap_content"
         android:layout_alignLeft="@id/name"
-        android:layout_alignBottom="@id/touxiang"
+        android:layout_below="@id/name"
+        android:layout_marginTop="4dp"
         android:text="所在位置: "
         android:textSize="12dp"></TextView>
 

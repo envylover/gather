@@ -37,7 +37,10 @@ public class StartGameDialogFragment extends DialogFragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
-        builder.setView(inflater.inflate(R.layout.join_room, null))
+        View view = inflater.inflate(R.layout.join_room, null);
+        roomName = view.findViewById(R.id.username);
+        password = view.findViewById(R.id.password);
+        builder.setView(view)
                 // Add action buttons
                 .setPositiveButton("进入", new DialogInterface.OnClickListener() {
                     @Override
@@ -64,8 +67,7 @@ public class StartGameDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.join_room, container, false);
-        roomName = view.findViewById(R.id.username);
-        password = view.findViewById(R.id.password);
+
         return view;
     }
     public void setEntryRoomClick(OnEntryRoomClickListener listener) {

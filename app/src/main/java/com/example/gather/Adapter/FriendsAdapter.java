@@ -23,18 +23,29 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     private ArrayList<Friend> friends;
 
-    protected class ViewHolder extends RecyclerView.ViewHolder {
+    public interface OnItemClickListener {
+        public void OnItemClickListener(View v, Friend friends);
+    }
+    private OnItemClickListener onItemClickListener;
+    protected class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView touxiang;
         private TextView distanceText;
         private TextView locationText;
         private TextView nameText;
+        private int position;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            this.itemView.setOnClickListener(this);
             touxiang = itemView.findViewById(R.id.touxiang);
             distanceText = itemView.findViewById(R.id.distanceText);
             locationText = itemView.findViewById(R.id.locationText);
             nameText = itemView.findViewById(R.id.name);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if(onItemClickListener != null) onItemClickListener.OnItemClickListener(view, friends.get(position));
         }
     }
 
@@ -67,6 +78,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         holder.distanceText.setText("距离您： " + friend.getDistance());
         holder.locationText.setText("所在位置为： " + friend.getLocation());
         holder.nameText.setText(friend.getName());
+        holder.position = position;
     }
 
     @Override
@@ -74,5 +86,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         return friends.size();
     }
 
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
 }
 

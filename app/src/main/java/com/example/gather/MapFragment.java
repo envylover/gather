@@ -23,16 +23,24 @@ import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.AMapOptions;
+import com.amap.api.maps.CameraUpdate;
+import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.MapsInitializer;
 import com.amap.api.maps.UiSettings;
+import com.amap.api.maps.model.CameraPosition;
+import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
 import com.example.gather.Interface.Promise;
+import com.example.gather.ViewModel.FriendViewModel;
 import com.example.gather.ViewModel.FriendsViewModel;
 import com.example.gather.ViewModel.LoginViewModel;
 import com.example.gather.util.location.UpdataPosition;
 import com.example.gather.util.location.UsePositionViewModel;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -51,15 +59,14 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
     private UsePositionViewModel usePosition;
     private UpdataPosition updataPosition = new UpdataPosition();
     private ExecutorService singThread = Executors.newSingleThreadExecutor();
+    private FriendViewModel friend;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         friendsViewModel = new ViewModelProvider(requireActivity()).get(FriendsViewModel.class);
-        friendsViewModel.Observe(requireActivity(), friends -> {
-
-        });
         useInfo = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
         usePosition = new ViewModelProvider(requireActivity()).get(UsePositionViewModel.class);
+        friend = new ViewModelProvider(requireActivity()).get(FriendViewModel.class);
         usePosition.Observe(requireActivity(), usePosition->{
             UsePosition usePosition1 = (UsePosition) usePosition;
             singThread.execute(() ->{
@@ -79,6 +86,7 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
         mapView.setOnTouchListener(this);
         mapView.onCreate(savedInstanceState);
         locationButton.setOnTouchListener(this);
+
         if(null != mapView) {
             aMap = mapView.getMap();
         }
@@ -95,6 +103,18 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
         aMap.setMyLocationEnabled(true);// 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
         aMap.setOnMapTouchListener(this);
         aMap.setOnMyLocationChangeListener(this);
+        friendsViewModel.Observe(requireActivity(), friends -> {
+            for (Friend f : (ArrayList<Friend>)friends)
+            {
+                LatLng latLng = new LatLng(f.lat,f.lnt);
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(latLng);
+                markerOptions.setFlat(false);
+                markerOptions.title(f.name);
+                final Marker marker = aMap.addMarker(markerOptions);
+                marker.showInfoWindow();
+            }
+        });
         return view;
     }
 
@@ -102,6 +122,16 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
     public void onResume() {
         super.onResume();
         mapView.onResume();
+        if (this.friend != null) {
+            Friend friend = this.friend.getFriend();
+            if (friend != null) {
+                CameraUpdate mCameraUpdate = CameraUpdateFactory.newCameraPosition(
+                        new CameraPosition(new LatLng(friend.lat, friend.lnt), 50, 0, 0));
+                //带动画的移动，aMap添加动画监听时，会有动画效果。不添加不会开启动画
+                aMap.moveCamera(mCameraUpdate);
+                isFollow = false;
+            }
+        }
     }
 
     @Override
@@ -114,6 +144,12 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
     public void onPause() {
         super.onPause();
         mapView.onPause();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if(friend != null) friend.clear();
     }
 
     @Override
@@ -157,6 +193,7 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
 
     @Override
     public void onMyLocationChange(Location location) {
+
         UsePosition usePosition = new UsePosition(location.getLatitude(),location.getLongitude());
         this.usePosition.setUsePositionM(usePosition);
     }

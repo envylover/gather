@@ -91,7 +91,7 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
                         Gson gson = new Gson();
                         Type type = new TypeToken<ArrayList<Friend>>(){}.getType();
                         ArrayList<Friend> friendList = gson.fromJson(data, type);
-                        friends.setFriends(friendList);
+                        friends.setFriends(friendList,userInfo.user.getValue());
                     }
 
                     @Override
@@ -105,7 +105,7 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
                         }
                     }
                 });
-                checkRoom.check();
+                checkRoom.check(userInfo.user.getValue().uid);
             }
         });
         if(data != null) {
@@ -170,6 +170,7 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
     protected void onDestroy() {
         super.onDestroy();
         MainApplication.activityManger.removeActivity(this);
+
     }
 
     @Override
@@ -208,5 +209,9 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     public void OnCancelClick() {
 
+    }
+
+    public void setBottomMapNavigationSelect(){
+        bottomNavigationView.setSelectedItemId(R.id.map_fragment);
     }
 }
