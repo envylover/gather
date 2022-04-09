@@ -10,7 +10,7 @@
         android:title="add friends"
         android:visible="true"
         app:showAsAction="ifRoom" />
-    <item android:id="@+id/action_settings"
+    <item android:id="@+id/create_room"
         android:title="创建房间"
         app:showAsAction="never"/>
 </menu>

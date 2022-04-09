@@ -32,6 +32,10 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:exported="false" />
         <activity
+            android:name="com.amap.api.navi.AmapRouteActivity"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:configChanges="orientation|keyboardHidden|screenSize|navigation" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

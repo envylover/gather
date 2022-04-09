@@ -36,6 +36,7 @@ public class UpdataPosition {
             }
             String res = null;
             try {
+                if(response == null) return;
                 res = response.body().string();
                 Gson gson = new Gson();
                 UpdataRes updataRes = gson.fromJson(res,UpdataRes.class);

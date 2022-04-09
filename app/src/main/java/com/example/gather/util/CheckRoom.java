@@ -111,7 +111,31 @@ public class CheckRoom {
         }
     }
 
-    public void createRoom() {
+    public void createRoom(String roomNum, String password, String uid) {
+        this.roomNum = roomNum;
+        this.password = password;
+        String Url = baseUrl + "?type=createRoom";
+        Md5 md5 = new Md5();
+        password = md5.md5(new String[]{password});
+        FormBody body = new FormBody.Builder().add("rid", roomNum).add("password", password).build();
+        Request request = new Request.Builder().url(Url)
+                .addHeader("charset", "utf-8")
+                .post(body)
+                .build();
+        Response response = null;
+        try {
+            response = client.newCall(request).execute();
+            String res = response.body().string();
+            Gson gson = new Gson();
+            CheckResponse result = gson.fromJson(res, CheckResponse.class);
+            if(result.result != null && result.result.compareTo("success") == 0) {
+                 if(promise != null) promise.onSuccess("success");
+            } else {
+                if(promise !=null) promise.onFail("error");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 }

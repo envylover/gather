@@ -26,7 +26,7 @@ public class StartGameDialogFragment extends DialogFragment {
     private EditText roomName;
     private EditText password;
     public interface OnEntryRoomClickListener{
-        public void OnEntryRoomClick (String name, String password);
+        public void OnEntryRoomClick (String name, String password, String tag);
         public void OnCancelClick();
     }
     OnEntryRoomClickListener onEntryRoomClickListener;
@@ -40,14 +40,21 @@ public class StartGameDialogFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.join_room, null);
         roomName = view.findViewById(R.id.username);
         password = view.findViewById(R.id.password);
+        String tag = getTag();
+        String text = null;
+        if("创建房间".compareTo(tag) == 0) {
+            text = "创建";
+        } else {
+            text = "进入";
+        }
         builder.setView(view)
                 // Add action buttons
-                .setPositiveButton("进入", new DialogInterface.OnClickListener() {
+                .setPositiveButton(text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         // sign in the user ...
                         if(onEntryRoomClickListener != null) {
-                            onEntryRoomClickListener.OnEntryRoomClick(roomName.getText().toString(), password.getText().toString());
+                            onEntryRoomClickListener.OnEntryRoomClick(roomName.getText().toString(), password.getText().toString(), getTag());
                         }
 
                     };

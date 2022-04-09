@@ -184,10 +184,15 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_friends:
-                StartGameDialogFragment startGameDialogFragment = new  StartGameDialogFragment();
-                startGameDialogFragment.setEntryRoomClick(this);
-                startGameDialogFragment.show(getSupportFragmentManager(), "加入房间");
+                StartGameDialogFragment startGameDialogFragment1 = new  StartGameDialogFragment();
+                startGameDialogFragment1.setEntryRoomClick(this);
+                startGameDialogFragment1.show(getSupportFragmentManager(), "进入房间");
                 return true;
+            case R.id.create_room:
+                StartGameDialogFragment startGameDialogFragment2 = new  StartGameDialogFragment();
+                startGameDialogFragment2.setEntryRoomClick(this);
+                startGameDialogFragment2.show(getSupportFragmentManager(), "创建房间");
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -195,15 +200,35 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
 
 
     @Override
-    public void OnEntryRoomClick(String name, String password) {
-        RoomInfo roomInfo = new RoomInfo();
-        roomInfo.roomName = name;
-        roomInfo.password = password;
-        this.roomInfo.setRoomInfo(roomInfo);
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setCanceledOnTouchOutside(true);
-        progressDialog.setMessage("正在进入房间");
-        progressDialog.show();
+    public void OnEntryRoomClick(String name, String password, String tag) {
+        if("创建房间".compareTo(tag) == 0){
+            CheckRoom checkRoom = new CheckRoom(this, name , password);
+            checkRoom.setCheckedListener(new Promise() {
+                @Override
+                public void onSuccess(String data) {
+                    runOnUiThread(() -> {
+                        OnEntryRoomClick(name, password, "进入房间");
+                    });
+                }
+
+                @Override
+                public void onFail(String error) {
+
+                }
+            });
+            new Thread(()-> {
+                checkRoom.createRoom(name, password, userInfo.user.getValue().uid);
+            }).start();
+        } else if ("进入房间".compareTo(tag) == 0) {
+            RoomInfo roomInfo = new RoomInfo();
+            roomInfo.roomName = name;
+            roomInfo.password = password;
+            this.roomInfo.setRoomInfo(roomInfo);
+            progressDialog = new ProgressDialog(this);
+            progressDialog.setCanceledOnTouchOutside(true);
+            progressDialog.setMessage("正在进入房间");
+            progressDialog.show();
+        }
     }
 
     @Override

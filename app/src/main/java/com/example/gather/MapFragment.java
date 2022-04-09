@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +34,11 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
+import com.amap.api.maps.model.Poi;
+import com.amap.api.navi.AmapNaviPage;
+import com.amap.api.navi.AmapNaviParams;
+import com.amap.api.navi.AmapNaviType;
+import com.amap.api.navi.AmapPageType;
 import com.example.gather.Interface.Promise;
 import com.example.gather.ViewModel.FriendViewModel;
 import com.example.gather.ViewModel.FriendsViewModel;
@@ -44,7 +50,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MapFragment extends Fragment implements View.OnTouchListener, AMap.OnMapTouchListener, AMap.OnMyLocationChangeListener, Promise {
+public class MapFragment extends Fragment implements View.OnTouchListener, AMap.OnMapTouchListener, AMap.OnMyLocationChangeListener, Promise, AMap.OnMarkerClickListener {
 
     private MapView mapView;
     private AMap aMap;
@@ -60,6 +66,7 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
     private UpdataPosition updataPosition = new UpdataPosition();
     private ExecutorService singThread = Executors.newSingleThreadExecutor();
     private FriendViewModel friend;
+    private Friend DestPoint;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,7 +107,8 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
         uiSettings.setScaleControlsEnabled(true);
         uiSettings.setZoomControlsEnabled(false);
         uiSettings.setLogoPosition(AMapOptions.LOGO_POSITION_BOTTOM_RIGHT);
-        aMap.setMyLocationEnabled(true);// 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
+        // 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
+        aMap.setMyLocationEnabled(false);
         aMap.setOnMapTouchListener(this);
         aMap.setOnMyLocationChangeListener(this);
         friendsViewModel.Observe(requireActivity(), friends -> {
@@ -113,6 +121,8 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
                 markerOptions.title(f.name);
                 final Marker marker = aMap.addMarker(markerOptions);
                 marker.showInfoWindow();
+                marker.setObject(f);
+                aMap.setOnMarkerClickListener(this);
             }
         });
         return view;
@@ -126,12 +136,17 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
             Friend friend = this.friend.getFriend();
             if (friend != null) {
                 CameraUpdate mCameraUpdate = CameraUpdateFactory.newCameraPosition(
-                        new CameraPosition(new LatLng(friend.lat, friend.lnt), 50, 0, 0));
+                        new CameraPosition(new LatLng(friend.lat, friend.lnt), 20, 0, 0));
                 //带动画的移动，aMap添加动画监听时，会有动画效果。不添加不会开启动画
                 aMap.moveCamera(mCameraUpdate);
                 isFollow = false;
             }
+            else {
+                aMap.setMyLocationEnabled(true);
+                return;
+            }
         }
+        aMap.setMyLocationEnabled(false);
     }
 
     @Override
@@ -161,11 +176,20 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (v.getId() == R.id.naviButton) {
+            if(DestPoint == null) Toast.makeText(requireActivity(), "请设置终点", Toast.LENGTH_SHORT).show();
+            else {
+                Poi start = new Poi(useInfo.getUser().name, new LatLng(usePosition.getUsePosition().lat, usePosition.getUsePosition().lnt),null);
+                Poi end = new Poi(DestPoint.name, new LatLng(DestPoint.lat, DestPoint.lnt),null);
+                AmapNaviParams params = new AmapNaviParams(start, null, end, AmapNaviType.DRIVER, AmapPageType.ROUTE);
+                AmapNaviPage.getInstance().showRouteActivity(requireActivity().getApplicationContext(), params, null);
+                DestPoint = null;
+            }
 
         } else if(v.getId() == R.id.locationButton) {
             if(!isFollow) {
                 myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_MAP_ROTATE);
                 aMap.setMyLocationStyle(myLocationStyle);
+                aMap.setMyLocationEnabled(true);
                 isFollow = true;
             }
         }
@@ -196,6 +220,12 @@ public class MapFragment extends Fragment implements View.OnTouchListener, AMap.
 
         UsePosition usePosition = new UsePosition(location.getLatitude(),location.getLongitude());
         this.usePosition.setUsePositionM(usePosition);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        DestPoint = (Friend) marker.getObject();
+        return false;
     }
 }
 

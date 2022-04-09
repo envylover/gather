@@ -23,7 +23,7 @@ public class UsePositionViewModel extends ViewModel {
     public void setUsePositionM(UsePosition s) {
         this.usePositionM.setValue(s);
     }
-    public UsePosition getFriends() {
+    public UsePosition getUsePosition() {
         return usePositionM.getValue();
     }
 
