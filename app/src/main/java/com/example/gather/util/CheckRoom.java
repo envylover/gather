@@ -35,6 +35,9 @@ public class CheckRoom {
         this.password = password;
         this.context = context;
     }
+
+    public CheckRoom() { }
+
     public void setCheckedListener(Promise promise) {
         this.promise = promise;
     }
@@ -137,5 +140,27 @@ public class CheckRoom {
             e.printStackTrace();
         }
 
+    }
+
+    public void quitRoom(String rid, String uid) {
+        String Url = baseUrl + "?type=quit";
+        if(rid == null || uid == null ) return;
+        FormBody body = new FormBody.Builder().add("rid", rid).add("uid", uid).build();
+        Request request = new Request.Builder().url(Url)
+                .addHeader("charset", "utf-8")
+                .post(body)
+                .build();
+        Response response = null;
+        try {
+            response = client.newCall(request).execute();
+            String res = response.body().string();
+            Gson gson = new Gson();
+            CheckResponse result = gson.fromJson(res, CheckResponse.class);
+//            if(result.data != null && result.data.length > 0 ) {
+//                if(promise != null) promise.onSuccess(gson.toJson(result.data));
+//            }else if(promise !=null) promise.onFail(result.errorMsg != null ? result.errorMsg : result.result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

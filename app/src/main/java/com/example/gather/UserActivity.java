@@ -65,8 +65,9 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
 
     public void init() {
         String data = getIntent().getStringExtra("user_info");
-        userInfo = new ViewModelProvider(this).get(LoginViewModel.class);
+
         menuView = findViewById(R.id.menu_view);
+        userInfo = new ViewModelProvider(this).get(LoginViewModel.class);
         roomInfo = new ViewModelProvider(this).get(RoomViewModel.class);
         friends = new ViewModelProvider(this).get(FriendsViewModel.class);
         userInfo.user.observe(this, userInfo -> {
@@ -167,10 +168,15 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     @Override
+    protected void onStop() {
+        new Thread(() -> new CheckRoom().quitRoom(roomInfo.getRoomInfo().roomName, userInfo.getUser().uid)).start();
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         MainApplication.activityManger.removeActivity(this);
-
     }
 
     @Override
@@ -239,4 +245,7 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
     public void setBottomMapNavigationSelect(){
         bottomNavigationView.setSelectedItemId(R.id.map_fragment);
     }
+
+
+
 }

@@ -86,11 +86,11 @@ public class FriendsGroupView extends Fragment implements SwipeRefreshLayout.OnR
          context = inflater.getContext();
          recyclerView = view.findViewById(R.id.friend_list);
          refreshLayout = view.findViewById(R.id.swipeRefresh);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(inflater.getContext());
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
-        refreshLayout.setOnRefreshListener(this);
-        return view;
+         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(inflater.getContext());
+         recyclerView.setLayoutManager(layoutManager);
+         recyclerView.setAdapter(adapter);
+         refreshLayout.setOnRefreshListener(this);
+         return view;
     }
 
     @Override
@@ -106,6 +106,9 @@ public class FriendsGroupView extends Fragment implements SwipeRefreshLayout.OnR
     @Override
     public void onResume() {
         super.onResume();
+        ArrayList<Friend> friends1 = friends.getFriends();
+        if(friends1 != null && friends1.size() > 0)
+          adapter.setFriends(friends.getFriends());
     }
 
 

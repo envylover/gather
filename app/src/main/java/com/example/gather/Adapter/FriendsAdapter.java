@@ -1,5 +1,7 @@
 package com.example.gather.Adapter;
 
+import android.graphics.Color;
+import android.graphics.ColorSpace;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +47,11 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
         @Override
         public void onClick(View view) {
-            if(onItemClickListener != null) onItemClickListener.OnItemClickListener(view, friends.get(position));
+            if(onItemClickListener != null) {
+                view.setBackgroundColor(Color.GRAY);
+                onItemClickListener.OnItemClickListener(view, friends.get(position));
+                view.setBackgroundColor(Color.WHITE);
+            }
         }
     }
 

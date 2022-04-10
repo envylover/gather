@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel;
 
 import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.model.LatLng;
-import com.amap.api.services.core.AMapException;
 import com.amap.api.services.core.LatLonPoint;
 import com.amap.api.services.geocoder.GeocodeSearch;
 import com.amap.api.services.geocoder.RegeocodeAddress;
@@ -18,10 +17,14 @@ import com.example.gather.UserInfo;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class FriendsViewModel extends ViewModel {
     private MutableLiveData<ArrayList<Friend>> friends;
+    private ExecutorService executorService = Executors.newCachedThreadPool();
     public FriendsViewModel() {
         friends = new MutableLiveData<>();
     }
@@ -33,25 +36,27 @@ public class FriendsViewModel extends ViewModel {
             return;
         }
         LatLng useLatlnt = new LatLng(currentUse.lat, currentUse.lnt);
-        new Thread(()->{
-
-            try {
-                for (Friend i : friends) {
-                    LatLng friendsLatlnt = new LatLng(i.lat,i.lnt);
+            AtomicInteger taskCnt = new AtomicInteger();
+            for (Friend i : friends) {
+                LatLng friendsLatlnt = new LatLng(i.lat, i.lnt);
+                executorService.execute(() -> {
                     float distance = AMapUtils.calculateLineDistance(useLatlnt, friendsLatlnt);
                     i.setDistance(Float.valueOf(distance).toString() + 'm');
-                    GeocodeSearch geocoderSearch = new GeocodeSearch(MainApplication.context);
-                    RegeocodeQuery query = new RegeocodeQuery(new LatLonPoint(friendsLatlnt.latitude, friendsLatlnt.longitude), 20,GeocodeSearch.GPS);
-                    RegeocodeAddress regeocodeAddress = geocoderSearch.getFromLocation(query);
-                    i.location = regeocodeAddress.getFormatAddress();
-                }
-
-            } catch (AMapException e) {
-                e.printStackTrace();
+                    GeocodeSearch geocoderSearch = null;
+                    try {
+                        geocoderSearch = new GeocodeSearch(MainApplication.context);
+                        RegeocodeQuery query = new RegeocodeQuery(new LatLonPoint(friendsLatlnt.latitude, friendsLatlnt.longitude), 20, GeocodeSearch.GPS);
+                        RegeocodeAddress regeocodeAddress = geocoderSearch.getFromLocation(query);
+                        i.location = regeocodeAddress.getFormatAddress();
+                        taskCnt.getAndIncrement();
+                        if(taskCnt.get() == friends.toArray().length) {
+                            this.friends.postValue(friends);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
             }
-
-            this.friends.postValue(friends);
-        }).start();
     }
 
     public ArrayList<Friend> getFriends() {
@@ -65,4 +70,6 @@ public class FriendsViewModel extends ViewModel {
     public void removeObserve(Observer observer) {
         friends.removeObserver(observer);
     }
+
+
 }
