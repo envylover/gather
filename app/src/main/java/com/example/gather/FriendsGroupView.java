@@ -56,27 +56,6 @@ public class FriendsGroupView extends Fragment implements SwipeRefreshLayout.OnR
                 }
             }
         });
-//        roomInfo.Observe(requireActivity(), roomInfo -> {
-//            if(roomInfo != null) {
-//                RoomInfo room = (RoomInfo) roomInfo;
-//                CheckRoom checkRoom = new CheckRoom(getContext(), room.roomName, room.password);
-//                checkRoom.setCheckedListener(new Promise() {
-//                    @Override
-//                    public void onSuccess(String data) {
-//                        Gson gson = new Gson();
-//                        Type type = new TypeToken<ArrayList<Friend>>(){}.getType();
-//                        ArrayList<Friend> friendList = gson.fromJson(data, type);
-//                        friends.setFriends(friendList, useInfo.user.getValue());
-//                    }
-//
-//                    @Override
-//                    public void onFail(String error) {
-//                        Toast.makeText(MainApplication.context,"获取数据失败", Toast.LENGTH_LONG);
-//                    }
-//                });
-//                checkRoom.check(useInfo.user.getValue().uid);
-//            }
-//        });
     }
 
     @Nullable

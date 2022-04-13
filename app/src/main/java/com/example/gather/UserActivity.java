@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
@@ -99,6 +100,7 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
                     public void onFail(String error) {
                         if(progressDialog != null) {
                             runOnUiThread(()->{
+                                Toast.makeText(MainApplication.context, error,Toast.LENGTH_SHORT);
                                 if(progressDialog.isShowing())
                                     progressDialog.hide();
                                 progressDialog = null;
