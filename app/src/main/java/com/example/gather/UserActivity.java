@@ -176,6 +176,15 @@ public class UserActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     @Override
+    protected void onResume() {
+        if(this.roomInfo != null && this.roomInfo.getRoomInfo() != null && roomInfo.getRoomInfo().roomName != null)
+        {
+            new Thread(() -> new CheckRoom(this,roomInfo.getRoomInfo().roomName, roomInfo.getRoomInfo().password).joinRoom(userInfo.getUser().uid)).start();
+        }
+        super.onResume();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         MainApplication.activityManger.removeActivity(this);
